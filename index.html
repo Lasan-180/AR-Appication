@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AR Application</title>
 
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #ar-container {
+        width: 100%;
+        max-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #ar-scene {
+        max-width: 100%;
+        max-height: 100%;
+      }
+    </style>
+
     <!-- Include A-Frame library -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 
@@ -13,23 +37,77 @@
   </head>
 
   <body>
-    <!-- AR Scene -->
-    <a-scene embedded arjs="sourceType: webcam;">
-      <!-- Geometrical shapes -->
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="red"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="blue"></a-sphere>
-      <a-octahedron position="1 0.5 -3" color="green"></a-octahedron>
+    <div id="ar-container">
+      <!-- AR Scene -->
+      <a-scene embedded arjs="sourceType: webcam;" id="ar-scene">
+        <!-- Geometrical shapes -->
+        <a-box
+          id="box"
+          position="-1 0.5 -3"
+          rotation="0 45 0"
+          color="red"
+        ></a-box>
+        <a-sphere
+          id="sphere"
+          position="0 1.25 -5"
+          radius="1.25"
+          color="blue"
+        ></a-sphere>
+        <a-octahedron
+          id="octahedron"
+          position="1 0.5 -3"
+          color="green"
+        ></a-octahedron>
 
-      <!-- AR Marker -->
-      <a-marker preset="hiro">
-        <!-- Content to be displayed when marker is detected -->
-        <a-entity position="0 0 0" scale="0.4 0.4 0.4" rotation="0 0 0">
-          <a-box color="red"></a-box>
-        </a-entity>
-      </a-marker>
+        <!-- AR Marker -->
+        <a-marker preset="hiro">
+          <!-- Content to be displayed when marker is detected -->
+          <a-entity position="0 0 0" scale="0.4 0.4 0.4" rotation="0 0 0">
+            <a-box color="red"></a-box>
+          </a-entity>
+        </a-marker>
 
-      <!-- AR Camera -->
-      <a-entity camera></a-entity>
-    </a-scene>
+        <!-- AR Camera -->
+        <a-entity camera></a-entity>
+      </a-scene>
+    </div>
+    <script>
+      // Get references to the A-Frame entities
+      const boxEntity = document.querySelector("#box");
+      const sphereEntity = document.querySelector("#sphere");
+      const octahedronEntity = document.querySelector("#octahedron");
+
+      // Variables to store gesture information
+      let initialRotation = 0;
+      let initialScale = 1;
+
+      // Add event listeners for gestures
+      document.addEventListener("gesturestart", function (event) {
+        initialRotation = boxEntity.getAttribute("rotation").y;
+        initialScale = boxEntity.getAttribute("scale").x;
+      });
+
+      document.addEventListener("gesturemove", function (event) {
+        const rotationDelta =
+          ((event.rotation - event.startRotation) * 180) / Math.PI;
+        const scaleDelta = event.scale / event.startScale;
+
+        // Update rotation attribute based on gesture rotation
+        boxEntity.setAttribute(
+          "rotation",
+          `0 ${initialRotation + rotationDelta} 0`
+        );
+
+        // Update scale attribute based on gesture scaling
+        const newScale = initialScale * scaleDelta;
+        boxEntity.setAttribute("scale", `${newScale} ${newScale} ${newScale}`);
+      });
+
+      document.addEventListener("gestureend", function (event) {
+        // Reset gesture information
+        initialRotation = 0;
+        initialScale = 1;
+      });
+    </script>
   </body>
 </html>
